@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=api_database
+      - DB_USERNAME=root
+      - DB_PASSWORD=1234
+    networks:
+      - spring-mysql-net
+      
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=api_database
+      - MYSQL_ROOT_PASSWORD=1234
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - spring-mysql-net
+
+networks:
+  spring-mysql-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
