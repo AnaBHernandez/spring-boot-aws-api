@@ -39,12 +39,6 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-    @GetMapping("/")
-    public String home() {
-        return "redirect:/productos";
-    }
-
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         Product savedProduct = productRepository.save(product);
