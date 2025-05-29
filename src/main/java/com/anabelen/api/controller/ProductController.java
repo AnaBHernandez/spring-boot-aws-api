@@ -17,18 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.anabelen.api.model.Product;
 import com.anabelen.api.repository.ProductRepository;
+
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-    
+
     @Autowired
     private ProductRepository productRepository;
-    
+
     @GetMapping
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         Optional<Product> product = productRepository.findById(id);
@@ -38,13 +39,18 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    
+
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/productos";
+    }
+
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         Product savedProduct = productRepository.save(product);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
         Optional<Product> productData = productRepository.findById(id);
@@ -59,7 +65,7 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteProduct(@PathVariable Long id) {
         try {
