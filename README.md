@@ -71,3 +71,23 @@ Este proyecto implementa las mejores prácticas de seguridad:
 - No se almacenan credenciales en el código
 - Se utilizan variables de entorno para la configuración sensible
 - Los grupos de seguridad de AWS están configurados para permitir solo el tráfico necesario
+
+## Verificación Rápida del Despliegue CI/CD
+
+Después de configurar los secretos en GitHub Actions (EC2_HOST, EC2_PRIVATE_KEY, etc.), sigue estos pasos para verificar que la pipeline funciona correctamente:
+
+1.  **Haz un cambio menor:** Modifica este archivo `README.md` (o cualquier otro archivo no crítico de tu proyecto).
+2.  **Commitea y sube los cambios:**
+    ```bash
+    git add .
+    git commit -m "Test: Verificando despliegue CI/CD"
+    git push origin main
+    ```
+3.  **Monitorea la ejecución en GitHub Actions:**
+    * Ve a la pestaña "Actions" en tu repositorio de GitHub.
+    * Asegúrate de que el workflow "Deploy to AWS EC2" se ejecute y complete con éxito (todos los pasos con un check verde ✅).
+4.  **Verifica la aplicación en EC2:**
+    * Abre tu navegador y ve a `http://[TU_IP_EC2]/api/products` (reemplaza `[TU_IP_EC2]` con la IP pública de tu instancia EC2).
+    * Comprueba que la API responda correctamente.
+
+Si la API no responde como esperas, revisa los logs del workflow en GitHub Actions para identificar cualquier error.
