@@ -91,3 +91,53 @@ Después de configurar los secretos en GitHub Actions (EC2_HOST, EC2_PRIVATE_KEY
     * Comprueba que la API responda correctamente.
 
 Si la API no responde como esperas, revisa los logs del workflow en GitHub Actions para identificar cualquier error.
+
+## Estado del Proyecto
+
+### URLs de Acceso
+- **Aplicación en producción:** http://54.219.146.20/
+- **API REST:** http://54.219.146.20/api/products
+- **Repositorio GitHub:** https://github.com/AnaBHernandez/spring-boot-aws-api
+
+### Infraestructura AWS
+- **Servidor EC2:** anabelen-spring-boot-server (t2.micro)
+- **Base de datos RDS:** anabelen-products-db (MySQL 8.0)
+- **Región:** us-west-1 (California)
+- **VPC Peering:** Configurado entre EC2 y RDS
+
+### Pipeline CI/CD
+- **Herramienta:** GitHub Actions
+- **Trigger:** Push a rama main
+- **Despliegue:** Automático con Docker en EC2
+- **Estado:** Operativo
+
+## Documentación Técnica
+
+Para más detalles técnicos, consultar los archivos de documentación:
+- `DOCUMENTACION_CONFLUENCE.md` - Documentación técnica completa
+- `RESUMEN_TRABAJO_AYER.md` - Resumen de actividades realizadas
+
+## Troubleshooting
+
+### Problema Común: Communications Link Failure
+Si encuentras este error durante el despliegue:
+
+**Causa:** EC2 y RDS en VPCs diferentes
+**Solución:** Configurar VPC Peering entre las VPCs
+
+**Pasos para resolver:**
+1. Crear VPC Peering connection
+2. Aceptar la conexión en ambas VPCs
+3. Actualizar Route Tables
+4. Verificar Security Groups
+
+### Verificación de Conectividad
+```bash
+# Desde EC2, probar conexión a RDS
+nc -zv anabelen-products-db.c38cka2oapfl.us-west-1.rds.amazonaws.com 3306
+```
+
+## Contacto
+
+Proyecto desarrollado por Ana Belén Hernández
+Fecha: Mayo 2025
