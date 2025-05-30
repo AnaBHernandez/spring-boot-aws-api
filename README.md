@@ -141,3 +141,7 @@ nc -zv anabelen-products-db.c38cka2oapfl.us-west-1.rds.amazonaws.com 3306
 
 Proyecto desarrollado por Ana Belén Hernández
 Fecha: Mayo 2025
+
+## Test Pipeline CI/CD - 30 Mayo 2025
+IP EC2 verificada: 50.18.18.168
+Pipeline listo para prueba completa
