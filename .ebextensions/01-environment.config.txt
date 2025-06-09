@@ -1,0 +1,17 @@
+# .ebextensions/01-environment.config
+option_settings:
+  # Configuración general del entorno Elastic Beanstalk
+  aws:elasticbeanstalk:environment:
+    # Usaremos instancia única (para el objetivo de ahorro de costes inicial)
+    EnvironmentType: SingleInstance
+    ServiceRole: aws-elasticbeanstalk-service-role # Este rol suele ser creado por AWS. Si hay problema, Giacomo lo revisará.
+
+  # Configuración de Auto Scaling Group (ASG)
+  aws:autoscaling:asg:
+    MinSize: 1 # Mínimo de 1 instancia
+    MaxSize: 1 # Máximo de 1 instancia (para instancia única)
+
+  # Configuración de las instancias EC2
+  aws:ec2:instances:
+    InstanceTypes: t3.micro # ¡Usamos el tipo de instancia más pequeño para ahorrar costes!
+    EnableSpot: true # ¡Habilitar instancias Spot para el máximo ahorro!

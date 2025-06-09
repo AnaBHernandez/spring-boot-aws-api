@@ -1,147 +1,91 @@
-# Spring Boot AWS API
+# BalanceFlow API - Despliegue en AWS Elastic Beanstalk con DynamoDB
 
-Este proyecto es una API REST desarrollada con Spring Boot, desplegada en AWS EC2 y que utiliza una base de datos MySQL en RDS.
+Este proyecto es la API REST de BalanceFlow, desarrollada con Spring Boot, cuyo despliegue se ha adaptado para utilizar **AWS Elastic Beanstalk (PaaS)** y **Amazon DynamoDB (base de datos NoSQL)** como parte del Ejercicio 3 de AWS. El enfoque principal es la optimización de costes y el uso de servicios gestionados.
 
 ## Características
 
-- CRUD completo para la entidad Producto
-- Interfaz web para gestionar los productos
-- Despliegue automatizado con GitHub Actions
-- Dockerización para facilitar el despliegue
+-   API RESTful para la gestión de productos (CRUD completo)
+-   Despliegue en una plataforma PaaS para simplificar la administración del servidor.
+-   Utilización de una base de datos NoSQL para flexibilidad y escalabilidad.
+-   Configuración para minimizar costes de infraestructura.
+-   Planificación de automatización de encendido/apagado de recursos (cron jobs).
 
-## Tecnologías utilizadas
+## Tecnologías Utilizadas para este Ejercicio
 
-- Java 17
-- Spring Boot 3.x
-- Spring Data JPA
-- MySQL
-- Docker
-- AWS (EC2, RDS)
-- GitHub Actions
+-   Java 17
+-   Spring Boot 3.x
+-   **Amazon DynamoDB (Base de Datos NoSQL)**
+-   **AWS Elastic Beanstalk (Plataforma PaaS)**
+-   AWS SDK para Java (para integración con DynamoDB)
+-   Maven
 
-## Configuración del entorno de desarrollo
+## Configuración del Entorno de Desarrollo Local
 
-### Requisitos previos
-- Java 17 o superior
-- Maven
-- Docker y Docker Compose (opcional para desarrollo local)
-- MySQL (o usar Docker Compose)
+### Requisitos Previos
+-   Java 17 o superior
+-   Maven
+-   (Opcional) Docker y Docker Compose para emular DynamoDB localmente (DynamoDB Local)
 
 ### Pasos para ejecutar localmente
-1. Clonar el repositorio
-2. Configurar la base de datos MySQL local o usar Docker Compose
-3. Ejecutar la aplicación con Maven: `mvn spring-boot:run`
-4. Acceder a la aplicación en http://localhost:8080
+1.  Clonar el repositorio.
+2.  Configurar la base de datos DynamoDB local (o usar una instancia de prueba en la nube, si se prefiere).
+3.  Asegurarse de que `amazon.aws.region` en `src/main/resources/application.properties` está configurado para tu región de desarrollo local o de prueba.
+4.  Ejecutar la aplicación con Maven: `mvn spring-boot:run`
+5.  Acceder a la aplicación en `http://localhost:8080`
 
-## Configuración en AWS
+## Configuración en AWS (para el Ejercicio 3)
 
-### RDS (Base de datos)
-- Instancia MySQL en RDS
-- Grupo de seguridad configurado para permitir conexiones desde EC2
-- Base de datos creada y configurada
+### Región Principal
+-   **US West (N. California) - `us-west-1`**: Esta es la región donde se desplegarán todos los recursos de este ejercicio, alineada con la ubicación de tu VPC existente. Es crucial que la configuración `amazon.aws.region` en `application.properties` de tu proyecto sea `us-west-1` antes de compilar el JAR.
 
-### EC2 (Aplicación)
-- Instancia Amazon Linux 2023
-- Docker instalado
-- Aplicación desplegada como contenedor Docker
-- Grupo de seguridad configurado para permitir tráfico HTTP
+### Elastic Beanstalk (Plataforma de Aplicación)
+-   Entorno de servidor web en la plataforma **Java (Corretto 17)**.
+-   Configurado con **"Single instance"** para optimización de costes (evitando el balanceador de carga inicial).
+-   Se utiliza el rol de servicio IAM por defecto de Elastic Beanstalk para la gestión de recursos.
+-   Puerto de la aplicación configurado en `8080`. El grupo de seguridad de Elastic Beanstalk debe permitir tráfico HTTP (puerto 80) y potencialmente el puerto `8080` para comunicaciones directas o salud de la aplicación.
 
-## Despliegue
+### Amazon DynamoDB (Base de Datos NoSQL)
+-   Tabla `anabelen-products`.
+-   Configurada en modo de capacidad **"On-demand"** para pagar solo por el uso real y minimizar costos iniciales.
+-   Se otorgan los permisos necesarios al rol de la instancia EC2 (asociado a Elastic Beanstalk) para interactuar con DynamoDB (lectura, escritura).
 
-El despliegue se realiza automáticamente mediante GitHub Actions cuando se realiza un push a la rama principal. El proceso incluye:
+### Optimización de Costes (Directrices de Giacomo)
+-   **Instancia Única:** Despliegue inicial con una sola instancia para evitar costes de Load Balancer.
+-   **Cron Jobs para Encendido/Apagado (Pendiente de Configurar):** Implementación de acciones programadas (cron jobs) en Elastic Beanstalk para apagar (capacidad deseada a 0) las instancias fuera del horario laboral y encenderlas de nuevo, reduciendo el consumo de EC2.
+-   **Monitoreo y Limpieza:** Prácticas de revisar y eliminar recursos no utilizados (como buckets de S3 creados por Elastic Beanstalk) para evitar cargos innecesarios.
+-   **IP Elásticas:** Consciente de que Elastic Beanstalk asigna una IP elástica, la cual tiene un costo si no está asociada a una instancia en ejecución.
 
-1. Compilación de la aplicación con Maven
-2. Transferencia del JAR y Dockerfile a la instancia EC2
-3. Construcción de la imagen Docker
-4. Ejecución del contenedor con las variables de entorno apropiadas
+## Despliegue en AWS Elastic Beanstalk
 
-## Pruebas
+El despliegue se realiza subiendo el archivo `.jar` compilado de la aplicación directamente a un entorno de Elastic Beanstalk previamente configurado.
 
-Puedes probar la API con los siguientes endpoints:
+### Pasos
+1.  Asegurarse de que `amazon.aws.region=us-west-1` en `application.properties` y recompilar la aplicación (`mvn clean package`).
+2.  Acceder a la consola de AWS, ir a Elastic Beanstalk.
+3.  Crear un nuevo entorno de "Web server environment".
+4.  Configurar la aplicación: Nombre (`AnabelenApp`), Entorno (`Anabelen-dev`), Plataforma (`Java Corretto 17`).
+5.  Subir el archivo `spring-boot-aws-api-0.0.1-SNAPSHOT.jar` (o el nombre de tu JAR).
+6.  En Presets, seleccionar **"Single instance"** para minimizar costes.
+7.  Dejar los roles de servicio por defecto.
+8.  Crear el entorno y esperar a que esté en estado "OK" (verde).
 
-- GET /api/products - Obtener todos los productos
-- GET /api/products/{id} - Obtener un producto por ID
-- POST /api/products - Crear un nuevo producto
-- PUT /api/products/{id} - Actualizar un producto existente
-- DELETE /api/products/{id} - Eliminar un producto
+## Pruebas de la API (con DynamoDB)
 
-## Seguridad
+Una vez desplegada la aplicación y configurada la tabla DynamoDB, podrás probar la API.
 
-Este proyecto implementa las mejores prácticas de seguridad:
-- No se almacenan credenciales en el código
-- Se utilizan variables de entorno para la configuración sensible
-- Los grupos de seguridad de AWS están configurados para permitir solo el tráfico necesario
+-   **URL Base de Elastic Beanstalk:** `http://[URL_DE_TU_ENTORNO_EB]/` (proporcionada por Elastic Beanstalk).
+-   **API REST:** `http://[URL_DE_TU_ENTORNO_EB]/api/products`
 
-## Verificación Rápida del Despliegue CI/CD
-
-Después de configurar los secretos en GitHub Actions (EC2_HOST, EC2_PRIVATE_KEY, etc.), sigue estos pasos para verificar que la pipeline funciona correctamente:
-
-1.  **Haz un cambio menor:** Modifica este archivo `README.md` (o cualquier otro archivo no crítico de tu proyecto).
-2.  **Commitea y sube los cambios:**
-    ```bash
-    git add .
-    git commit -m "Test: Verificando despliegue CI/CD"
-    git push origin main
-    ```
-3.  **Monitorea la ejecución en GitHub Actions:**
-    * Ve a la pestaña "Actions" en tu repositorio de GitHub.
-    * Asegúrate de que el workflow "Deploy to AWS EC2" se ejecute y complete con éxito (todos los pasos con un check verde ✅).
-4.  **Verifica la aplicación en EC2:**
-    * Abre tu navegador y ve a `http://[TU_IP_EC2]/api/products` (reemplaza `[TU_IP_EC2]` con la IP pública de tu instancia EC2).
-    * Comprueba que la API responda correctamente.
-
-Si la API no responde como esperas, revisa los logs del workflow en GitHub Actions para identificar cualquier error.
-
-## Estado del Proyecto
-
-### URLs de Acceso
-- **Aplicación en producción:** http://54.219.146.20/
-- **API REST:** http://54.219.146.20/api/products
-- **Repositorio GitHub:** https://github.com/AnaBHernandez/spring-boot-aws-api
-
-### Infraestructura AWS
-- **Servidor EC2:** anabelen-spring-boot-server (t2.micro)
-- **Base de datos RDS:** anabelen-products-db (MySQL 8.0)
-- **Región:** us-west-1 (California)
-- **VPC Peering:** Configurado entre EC2 y RDS
-
-### Pipeline CI/CD
-- **Herramienta:** GitHub Actions
-- **Trigger:** Push a rama main
-- **Despliegue:** Automático con Docker en EC2
-- **Estado:** Operativo
-
-## Documentación Técnica
-
-Para más detalles técnicos, consultar los archivos de documentación:
-- `DOCUMENTACION_CONFLUENCE.md` - Documentación técnica completa
-- `RESUMEN_TRABAJO_AYER.md` - Resumen de actividades realizadas
+### Endpoints (CRUD de Productos)
+-   `POST /api/products` - Crear un nuevo producto
+-   `GET /api/products` - Obtener todos los productos
+-   `GET /api/products/{id}` - Obtener un producto por ID
+-   `PUT /api/products/{id}` - Actualizar un producto existente
+-   `DELETE /api/products/{id}` - Eliminar un producto
 
 ## Troubleshooting
 
-### Problema Común: Communications Link Failure
-Si encuentras este error durante el despliegue:
-
-**Causa:** EC2 y RDS en VPCs diferentes
-**Solución:** Configurar VPC Peering entre las VPCs
-
-**Pasos para resolver:**
-1. Crear VPC Peering connection
-2. Aceptar la conexión en ambas VPCs
-3. Actualizar Route Tables
-4. Verificar Security Groups
-
-### Verificación de Conectividad
-```bash
-# Desde EC2, probar conexión a RDS
-nc -zv anabelen-products-db.c38cka2oapfl.us-west-1.rds.amazonaws.com 3306
-```
-
-## Contacto
-
-Proyecto desarrollado por Ana Belén Hernández
-Fecha: Mayo 2025
-
-## Test Pipeline CI/CD - 30 Mayo 2025
-IP EC2 verificada: 50.18.18.168
-Pipeline listo para prueba completa
+### Problemas Comunes
+-   **Error de conexión a DynamoDB:**
+    -   Verificar que la región en `application.properties` (`us-west-1`) coincida con la región del despliegue en Elastic Beanstalk y donde se creó la tabla DynamoDB.
+    -   Asegurarse de que el rol de la instancia EC2 (asociado a Elastic Beanstalk) tenga los permisos IAM correctos para `dynamodb:CreateTable`, `dynamodb:GetItem`, `dynamodb:PutItem`, etc.,

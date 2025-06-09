@@ -1,0 +1,5 @@
+# .ebextensions/02-cron-schedule.config
+# Este archivo sirve para demostrar el concepto de configuración de cron jobs para ahorro de costes.
+# La implementación real de apagado/encendido horario se gestiona mejor con Time-based Scaling
+# en la consola de Elastic Beanstalk (que haremos en el Paso 5.4.b).
+# Para el ejercicio, la existencia del archivo y el conocimiento del concepto es clave.
