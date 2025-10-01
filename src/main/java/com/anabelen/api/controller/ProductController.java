@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.anabelen.api.exception.ProductNotFoundException;
 import com.anabelen.api.model.Product;
 import com.anabelen.api.repository.ProductRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/products") 
@@ -28,16 +31,16 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product savedProduct = productRepository.save(product); //
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
+        Product savedProduct = productRepository.save(product);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable String id) { 
-        Optional<Product> product = productRepository.findById(id); 
-        return product.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                      .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado con ID: " + id));
+        return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
     @GetMapping
@@ -47,31 +50,25 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable String id, @RequestBody Product product) { 
-        Optional<Product> existingProductOptional = productRepository.findById(id); 
-        if (existingProductOptional.isPresent()) {
-            Product existingProduct = existingProductOptional.get();
-            existingProduct.setName(product.getName());
-            existingProduct.setDescription(product.getDescription());
-            existingProduct.setPrice(product.getPrice());
-            existingProduct.setStock(product.getStock());
-            existingProduct.setMimoCategory(product.getMimoCategory()); 
-            Product updatedProduct = productRepository.save(existingProduct); 
-            return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody Product product) { 
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado con ID: " + id));
+        
+        existingProduct.setName(product.getName());
+        existingProduct.setDescription(product.getDescription());
+        existingProduct.setPrice(product.getPrice());
+        existingProduct.setStock(product.getStock());
+        existingProduct.setMimoCategory(product.getMimoCategory()); 
+        Product updatedProduct = productRepository.save(existingProduct); 
+        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteProduct(@PathVariable String id) { 
-        try {
-            productRepository.deleteById(id); 
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado con ID: " + id));
+        productRepository.deleteById(id); 
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     

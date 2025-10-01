@@ -24,14 +24,21 @@ Este proyecto es la API REST de BalanceFlow, desarrollada con Spring Boot, cuyo 
 ### Requisitos Previos
 -   Java 17 o superior
 -   Maven
--   (Opcional) Docker y Docker Compose para emular DynamoDB localmente (DynamoDB Local)
+-   AWS CLI configurado (para desarrollo con DynamoDB real)
 
-### Pasos para ejecutar localmente
-1.  Clonar el repositorio.
-2.  Configurar la base de datos DynamoDB local (o usar una instancia de prueba en la nube, si se prefiere).
-3.  Asegurarse de que `amazon.aws.region` en `src/main/resources/application.properties` está configurado para tu región de desarrollo local o de prueba.
-4.  Ejecutar la aplicación con Maven: `mvn spring-boot:run`
-5.  Acceder a la aplicación en `http://localhost:8080`
+### Ejecutar la aplicación
+```bash
+# 1. Clonar el repositorio
+git clone <tu-repositorio>
+
+# 2. Configurar AWS CLI (si no está configurado)
+aws configure
+
+# 3. Ejecutar la aplicación
+mvn spring-boot:run
+
+# 4. Acceder a la aplicación en http://localhost:8086
+```
 
 ## Configuración en AWS (para el Ejercicio 3)
 
@@ -42,7 +49,7 @@ Este proyecto es la API REST de BalanceFlow, desarrollada con Spring Boot, cuyo 
 -   Entorno de servidor web en la plataforma **Java (Corretto 17)**.
 -   Configurado con **"Single instance"** para optimización de costes (evitando el balanceador de carga inicial).
 -   Se utiliza el rol de servicio IAM por defecto de Elastic Beanstalk para la gestión de recursos.
--   Puerto de la aplicación configurado en `8080`. El grupo de seguridad de Elastic Beanstalk debe permitir tráfico HTTP (puerto 80) y potencialmente el puerto `8080` para comunicaciones directas o salud de la aplicación.
+-   Puerto de la aplicación configurado en `8085`. El grupo de seguridad de Elastic Beanstalk debe permitir tráfico HTTP (puerto 80) y potencialmente el puerto `8085` para comunicaciones directas o salud de la aplicación.
 
 ### Amazon DynamoDB (Base de Datos NoSQL)
 -   Tabla `anabelen-products`.
